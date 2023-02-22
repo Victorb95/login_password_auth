@@ -1,18 +1,31 @@
 const form = document.querySelector('form');
 
+const loginElem = document.querySelector('input[name="login"]');
+const passwordElem = document.querySelector('input[name="password"]');
+
+const btLogin = document.querySelector('#btLogin');
+const btRegister = document.querySelector('#btRegister');
+
+// ----------------- form submission -----------------
+
 form.addEventListener('submit', (e) => {
 	e.preventDefault();
-	const formData = new FormData(form);
-	let object = {};
-	formData.forEach((value, key) => object[key] = value);
 
-	const hasempty = Object.values(object).some(v => v.trim().length == 0)
-	if (hasempty) return alert('Empty inputs')
+	let formData = {
+		login: loginElem.value,
+		password: passwordElem.value
+	}
 
-	server.tryLogin(object, (res) => {
-		console.log('res', res);
-	})
+	const hasEmptyField = Object.values(formData).some(v => v.length == 0);
+	if (hasEmptyField) return alert('Empty inputs');
+
+	if (e.submitter == btRegister) return server.tryRegister(formData, res => alert(res));
+
+	server.tryLogin(formData, res => alert(res));
 });
+
+
+// ----------------- requests -----------------
 
 async function request(url, method, data, callback) {
 	const response = await fetch(url,
@@ -27,7 +40,11 @@ async function request(url, method, data, callback) {
 }
 
 const server = {
+	URL: 'http://localhost:3000',
 	tryLogin(data, callback) {
-		request('http://localhost:3000', 'POST', data, (res) => callback(JSON.parse(res)))
+		request(server.URL + '/login', 'POST', data, (res) => callback(JSON.parse(res)))
+	},
+	tryRegister(data, callback) {
+		request(server.URL + '/register', 'POST', data, (res) => callback(JSON.parse(res)))
 	}
 }
